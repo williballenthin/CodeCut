@@ -8,14 +8,13 @@ import logging
 from collections import namedtuple
 
 import argparse
-
-
-logger = logging.getLogger(__name__)
-
+import networkx as nx
 
 import idc
 import idautils
 import ida_funcs
+
+logger = logging.getLogger(__name__)
 
 
 Segment = namedtuple('Segment', ['start', 'end', 'name'])
@@ -86,6 +85,8 @@ def enum_edges():
 
 
 def extract_xref_graph():
+    G = nx.DiGraph()
+
     edges = set([])
     functions = {}
     datas = {}
@@ -96,10 +97,9 @@ def extract_xref_graph():
         names[ea] = name
 
     logger.debug('fetching edges')
-    for edge in enum_edges():
-        edges.add(edge)
+    for src, dst, typ in enum_edges():
+        G.add_edge(src, dst, edge_type=typ)
 
-        src, dst, typ = edge
         # src is always function
         if src not in functions:
             functions[src] = idc.GetFunctionName(src)
@@ -114,22 +114,20 @@ def extract_xref_graph():
             if dst not in datas:
                 datas[dst] = names.get(dst, 'data_%x' % dst)
 
-    print('edge:source,target,edge-type')
-    for edge in edges:
-        print('edge:0x%x,0x%x,%s' % edge)
-
-    print('node:id,node-type,label')
     for fva, name in functions.items():
-        print('node:0x%x,function,%s' % (fva, name))
+        G.add_node(fva, label=name, node_type='function')
     for dva, name in datas.items():
-        print('node:0x%x,data,%s' % (dva, name))
+        G.add_node(dva, label=name, node_type='data')
+
+    return G
 
 
 def main():
     logging.basicConfig(level=logging.DEBUG)
     logging.getLogger().setLevel(logging.DEBUG)
 
-    extract_xref_graph()
+    G = extract_xref_graph()
+    nx.write_gexf(G, 'xrefs.gexf')
 
     return 0
 
