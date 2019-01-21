@@ -103,12 +103,12 @@ def extract_xref_graph():
 
         # src is always function
         if src not in functions:
-            functions[src] = idc.GetFunctionName(src)
+            functions[src] = names.get(src, 'sub_%x' % src)
 
         if typ == XREF_CODE:
             # dst is function
             if dst not in functions:
-                functions[dst] = idc.GetFunctionName(src)
+                functions[dst] = names.get(dst, 'sub_%x' % dst)
 
         else:
             # dst is data
