@@ -86,6 +86,12 @@ def enum_edges():
                     yield (function, xref, XREF_DATA)
 
 
+def windows(s, size):
+    l = list(s)
+    for window in [l[i:i+size] for i in range(len(l) - size + 1)]:
+        yield window
+
+
 def extract_xref_graph():
     G = nx.DiGraph()
 
@@ -121,6 +127,10 @@ def extract_xref_graph():
 
     for dva, name in datas.items():
         G.add_node(dva, address=hex(dva), label=name, node_type='data')
+
+    for first, second in windows(sorted(functions.keys()), 2):
+        G.add_edge(first, second, edge_type='proximity')
+        G.add_edge(second, first, edge_type='proximity')
 
     return G
 
