@@ -3,6 +3,7 @@
 author: Willi Ballenthin
 email: willi.ballenthin@gmail.com
 '''
+import os
 import sys
 import logging
 from collections import namedtuple
@@ -127,7 +128,7 @@ def main():
     logging.getLogger().setLevel(logging.DEBUG)
 
     G = extract_xref_graph()
-    nx.write_gexf(G, 'xrefs.gexf')
+    nx.write_gexf(G, os.environ.get('GEXF_PATH', idc.GetInputSHA256() + '.gexf'))
 
     return 0
 
