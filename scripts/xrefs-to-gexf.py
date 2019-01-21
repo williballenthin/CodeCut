@@ -78,6 +78,7 @@ def enum_edges():
                     if xref.type not in (idaapi.fl_CF, idaapi.fl_CN):
                         continue
                     # TODO: should calls to imports be included here?
+                    # they act more like data references
                     yield (function, xref.to, XREF_CODE)
 
                 for xref in idautils.DataRefsFrom(insn):
@@ -93,11 +94,11 @@ def extract_xref_graph():
     datas = {}
 
     names = {}
-    logger.debug('fetching names')
+    logger.debug('fetching names...')
     for ea, name in idautils.Names():
         names[ea] = name
 
-    logger.debug('fetching edges')
+    logger.debug('fetching edges...')
     for src, dst, typ in enum_edges():
         G.add_edge(src, dst, edge_type=typ)
 
@@ -127,8 +128,12 @@ def main():
     logging.basicConfig(level=logging.DEBUG)
     logging.getLogger().setLevel(logging.DEBUG)
 
+    logger.info('extracting cross references from .idb...')
     G = extract_xref_graph()
-    nx.write_gexf(G, os.environ.get('GEXF_PATH', idc.GetInputSHA256() + '.gexf'))
+
+    path = os.environ.get('GEXF_PATH', idc.GetInputSHA256() + '.gexf')
+    logger.info('writing output to: %s', path)
+    nx.write_gexf(G, path)
 
     return 0
 
