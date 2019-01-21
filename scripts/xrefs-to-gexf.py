@@ -116,9 +116,9 @@ def extract_xref_graph():
                 datas[dst] = names.get(dst, 'data_%x' % dst)
 
     for fva, name in functions.items():
-        G.add_node(fva, label=name, node_type='function')
+        G.add_node(fva, address=fva, label=name, node_type='function')
     for dva, name in datas.items():
-        G.add_node(dva, label=name, node_type='data')
+        G.add_node(dva, address=dva, label=name, node_type='data')
 
     return G
 
